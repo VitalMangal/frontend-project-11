@@ -3,7 +3,7 @@
 import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 
-const dirname = import.meta.dirname;
+const { dirname } = import.meta;
 
 export default {
   mode: process.env.NODE_ENV || 'development',
@@ -25,26 +25,25 @@ export default {
   ],
   module: {
     rules: [
-        {
-            test: /\.js$/,
-            exclude: /node_modules/,
-            use: {
-              loader: 'babel-loader',
-              options: {
-                presets: ['@babel/preset-env'],
-              },
-            },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env'],
           },
-          { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
-          {
-            test: /\.scss$/,
-            use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader'],
-          },
+        },
+      },
+      { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
+      {
+        test: /\.scss$/,
+        use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader'],
+      },
       {
         test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
         type: 'asset',
       },
-
 
       // Add your rules for custom modules here
       // Learn more about loaders from https://webpack.js.org/loaders/
