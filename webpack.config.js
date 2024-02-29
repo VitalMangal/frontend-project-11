@@ -3,10 +3,11 @@
 import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 
+const isProduction = process.env.NODE_ENV === 'production';
 const { dirname } = import.meta;
 
-export default {
-  mode: process.env.NODE_ENV || 'development',
+const config = {
+// mode: process.env.NODE_ENV || 'development',
   entry: './src/index.js',
   output: {
     path: path.resolve(dirname, 'dist'),
@@ -49,4 +50,13 @@ export default {
       // Learn more about loaders from https://webpack.js.org/loaders/
     ],
   },
+};
+
+export default () => {
+  if (isProduction) {
+    config.mode = 'production';
+  } else {
+    config.mode = 'development';
+  }
+  return config;
 };
