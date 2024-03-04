@@ -59,6 +59,8 @@ export default () => {
         watchedState.error = '';
         watchedState.feeds.push(input.value);
         console.log(state);
+        form.reset();
+        input.focus();
       })
       .catch((validError) => {
         watchedState.error = validError.errors;
