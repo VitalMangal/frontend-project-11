@@ -1,5 +1,5 @@
-export const renderErrors = (feedback, value) => {
-  feedback.textContent = value; // i18next
+export const renderErrors = (feedback, value, i18next) => {
+  feedback.textContent = i18next.t(value);
   if (value === '') {
     feedback.classList.remove('is-invalid');
   } else {
