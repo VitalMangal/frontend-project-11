@@ -15,7 +15,6 @@ export default () => {
   const watchedState = onChange(state, (path, value) => {
     if (path === 'feeds') {
       // код обработки при обновлении списка подписок
-      form.reset();
     }
     if (path === 'error') {
       renderErrors(feedback, value);
@@ -25,30 +24,33 @@ export default () => {
   const validateURL = (url, feeds) => {
     const schema = yup.string().url().trim()
       .notOneOf(feeds);
-    return schema.validate(url)
-      .then(() => 'completed')
-      .catch((err) => {
-        console.log(err);
-        if (err.message === 'this must be a valid URL') {
-          return 'validError';
-        }
-        return 'duplicationError';
-      });
+    //console.log(feeds);
+    return schema.validate(url);
   };
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-     console.log(state);
-     console.log(input.value);
+     //console.log(state);
+     //console.log(input.value);
 
     validateURL(input.value, watchedState.feeds)
-      .then((validError) => {
-        console.log(validError);
-        watchedState.error = validError;
-        if (validError === 'completed') {
-          watchedState.feeds.push(input.value);
+      .then(() => {
+        watchedState.error = '';
+        watchedState.feeds.push(input.value);
+      })
+      .catch((validError) => {
+        //console.log(validError);
+        if (validError.message === 'this must be a valid URL') {
+          watchedState.error = 'validError';
+          return;
         }
+        watchedState.error = 'duplicationError';
         //console.log(state);
+      })
+      .then(() => {
+        console.log(state.feeds);
+        input.value = '';
+        console.log(state.feeds);
       });
   });
 };
