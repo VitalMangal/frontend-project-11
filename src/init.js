@@ -38,6 +38,7 @@ export default () => {
     },
     mixed: {
       notOneOf: 'duplicationError',
+      required: 'notEmpty',
     },
   });
 
@@ -55,14 +56,14 @@ export default () => {
 
   const watchedState = onChange(state, (path, value, previouseValue) => {
     if (path === 'feeds') {
-      console.log('Изменение фидов');
+      // console.log('Изменение фидов');
       if (!elements.feedsContainer.innerHTML) {
         primaryRender(elements.feedsContainer, 'Фиды');
       }
       renderFeeds(value, previouseValue);
     }
     if (path === 'posts') {
-      console.log('Изменение постов');
+      // console.log('Изменение постов');
       if (!elements.postsContainer.innerHTML) {
         primaryRender(elements.postsContainer, ' Посты');
       }
@@ -77,7 +78,7 @@ export default () => {
   });
 
   const validateURL = (url, feeds) => {
-    const schema = yup.string().url().trim()
+    const schema = yup.string().url().trim().required()
       .notOneOf(feeds);
     return schema.validate(url);
   };
@@ -104,7 +105,7 @@ export default () => {
         const newFeedAndPosts = parseResponse(response, elements.input.value);
         watchedState.feeds = [...state.feeds, ...newFeedAndPosts.feed];
         watchedState.posts = [...state.posts, ...newFeedAndPosts.posts];
-        console.log(state, 'UPDATE state');
+        // console.log(state, 'UPDATE state');
       })
       .then(() => {
         watchedState.feedback = 'Completed';
@@ -128,12 +129,12 @@ export default () => {
       .catch((error) => {
         watchedState.feedback = error.message;
         watchedState.processState = 'editing';
-        console.log(state, 'ERROR');
+        // console.log(state, 'ERROR');
       });
   });
 
   const watchNewPosts = () => {
-    console.log('watchNewPosts');
+    // console.log('watchNewPosts');
     watchedState.feeds.forEach((feed) => {
       const parsedUrl = allOriginsUrl(feed.rssRequest);
       axios.get(parsedUrl)
@@ -146,7 +147,7 @@ export default () => {
           reverseNewPosts.forEach((post) => {
             if (!existingPostsLinks.includes(post.itemLink)) {
               watchedState.posts.push(post);
-              console.log(state, 'period UPDATE state');
+              // console.log(state, 'period UPDATE state');
             }
           });
         })

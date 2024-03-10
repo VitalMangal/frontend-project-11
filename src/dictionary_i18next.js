@@ -8,6 +8,7 @@ export default {
     notConteinRSS: 'Ресурс не содержит валидный RSS',
     'Network Error': 'Ошибка сети',
     Completed: 'RSS успешно загружен',
+    notEmpty: 'Не должно быть пустым',
   },
 
 };
