@@ -76,6 +76,13 @@ export default () => {
     return schema.validate(url);
   };
 
+  const allOriginsUrl = (url) => {
+    const originsUrl = new URL('https://allorigins.hexlet.app/get');
+    originsUrl.searchParams.set('disableCache', 'true');
+    originsUrl.searchParams.set('url', url);
+    return originsUrl;
+  };
+
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     watchedState.processState = 'send';
@@ -84,15 +91,13 @@ export default () => {
     validateURL(elements.input.value, ressRequests)
       .then((validUrl) => {
         watchedState.feedback = '';
-        const parsedURL = new URL('https://allorigins.hexlet.app/get');
-        parsedURL.searchParams.set('disableCache', 'true');
-        parsedURL.searchParams.set('url', validUrl);
-        return axios.get(parsedURL);
+        const parsedUrl = allOriginsUrl(validUrl);
+        return axios.get(parsedUrl);
       })
       .then((response) => {
-        console.log(response);
+        // console.log(response);
         const newFeedAndPosts = parseResponse(response, elements.input.value);
-        watchedState.feeds.push(newFeedAndPosts.feed);
+        watchedState.feeds = [...state.feeds, ...newFeedAndPosts.feed];
         watchedState.posts = [...state.posts, ...newFeedAndPosts.posts];
         console.log(state, 'UPDATE state');
       })
@@ -117,4 +122,34 @@ export default () => {
         console.log(state, 'ERROR');
       });
   });
+
+  const watchNewPosts = () => {
+    console.log('watchNewPosts');
+    watchedState.feeds.forEach((feed) => {
+      const parsedUrl = allOriginsUrl(feed.rssRequest);
+      axios.get(parsedUrl)
+        .then((response) => {
+          const newRequestResult = parseResponse(response, 'feed', feed.feedId);
+          const existingPostsLinks = watchedState.posts
+            .filter((post) => post.feedId === feed.feedId)
+            .map((post) => post.itemLink);
+          const reverseNewPosts = newRequestResult.posts.reverse();
+          reverseNewPosts.forEach((post) => {
+            if (!existingPostsLinks.includes(post.itemLink)) {
+              watchedState.posts.push(post);
+              console.log(state, 'period UPDATE state');
+            }
+          });
+        })
+        .catch((error) => {
+          watchedState.feedback = error.message;
+          console.log(state, 'Period ERROR');
+        });
+    });
+  };
+
+  setTimeout(function check() {
+    watchNewPosts();
+    setTimeout(check, 5000);
+  }, 5000);
 };

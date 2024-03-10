@@ -33,11 +33,11 @@ export const renderFeedback = (elements, value, i18next) => {
       elements.feedback.classList.remove('text-danger');
       elements.feedback.classList.remove('text-success');
       break;
-  
+
     case 'Completed':
       elements.feedback.classList.add('text-success');
       break;
-  
+
     default:
       elements.input.classList.add('is-invalid');
       elements.feedback.classList.add('text-danger');
@@ -67,12 +67,13 @@ export const renderFeeds = (value, previouseValue) => {
 
 export const renderPosts = (value, previouseValue, i18next) => {
   const newPosts = _.difference(value, previouseValue);
+  const sortNewPosts = newPosts.reverse();
   // console.log(newPosts);
-  newPosts.forEach((post) => {
+  sortNewPosts.forEach((post) => {
     const liEl = document.createElement('li');
     liEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     const ulPostsEl = document.querySelector('.posts > .card > ul');
-    ulPostsEl.append(liEl);
+    ulPostsEl.prepend(liEl);
 
     const aEl = document.createElement('a');
     aEl.setAttribute('href', post.itemLink);
@@ -97,6 +98,7 @@ export const renderPosts = (value, previouseValue, i18next) => {
 export const renderModal = (target, posts, elements) => {
   const id = target.getAttribute('data-id');
   const necessaryPost = _.find(posts, { itemId: id });
+
   elements.modalHeader.textContent = necessaryPost.itemTitle;
   elements.modalBody.textContent = necessaryPost.itemDescription;
   elements.modalLink.setAttribute('href', necessaryPost.itemLink);
