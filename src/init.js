@@ -4,7 +4,13 @@ import onChange from 'on-change';
 import i18next from 'i18next';
 import axios from 'axios';
 import {
-  primaryRender, renderFeeds, renderPosts, renderFeedback, renderModal, renderProcess,
+  primaryRender,
+  renderFeeds,
+  renderPosts,
+  renderFeedback,
+  renderModal,
+  renderProcess,
+  renderLinkView,
 } from './view.js';
 import ru from './dictionary_i18next.js';
 import parseResponse from './parseResponse.js';
@@ -95,7 +101,6 @@ export default () => {
         return axios.get(parsedUrl);
       })
       .then((response) => {
-        // console.log(response);
         const newFeedAndPosts = parseResponse(response, elements.input.value);
         watchedState.feeds = [...state.feeds, ...newFeedAndPosts.feed];
         watchedState.posts = [...state.posts, ...newFeedAndPosts.posts];
@@ -109,10 +114,14 @@ export default () => {
       })
       .then(() => {
         const viewButtons = document.querySelectorAll('[data-bs-target="#modal"]');
-        // console.log(viewButtons);
         viewButtons.forEach((btn) => {
           btn.addEventListener('click', (event) => {
-            renderModal(event.target, state.posts, elements);
+            const id = event.target.getAttribute('data-id');
+            const necessaryPost = _.find(watchedState.posts, { itemId: id });
+            necessaryPost.itemRead = 'read';
+
+            renderModal(necessaryPost, elements);
+            renderLinkView(id);
           });
         });
       })
@@ -143,7 +152,7 @@ export default () => {
         })
         .catch((error) => {
           watchedState.feedback = error.message;
-          console.log(state, 'Period ERROR');
+          // console.log(state, 'Period ERROR');
         });
     });
   };

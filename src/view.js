@@ -68,7 +68,6 @@ export const renderFeeds = (value, previouseValue) => {
 export const renderPosts = (value, previouseValue, i18next) => {
   const newPosts = _.difference(value, previouseValue);
   const sortNewPosts = newPosts.reverse();
-  // console.log(newPosts);
   sortNewPosts.forEach((post) => {
     const liEl = document.createElement('li');
     liEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
@@ -95,13 +94,22 @@ export const renderPosts = (value, previouseValue, i18next) => {
   });
 };
 
-export const renderModal = (target, posts, elements) => {
-  const id = target.getAttribute('data-id');
-  const necessaryPost = _.find(posts, { itemId: id });
-
-  elements.modalHeader.textContent = necessaryPost.itemTitle;
-  elements.modalBody.textContent = necessaryPost.itemDescription;
+export const renderModal = (necessaryPost, elements) => {
+  const header = elements.modalHeader;
+  header.textContent = necessaryPost.itemTitle;
+  const body = elements.modalBody;
+  body.textContent = necessaryPost.itemDescription;
   elements.modalLink.setAttribute('href', necessaryPost.itemLink);
+};
+
+export const renderLinkView = (id) => {
+  const aEls = document.querySelectorAll('a');
+  aEls.forEach((el) => {
+    if (el.matches(`[data-id="${id}"]`)) {
+      el.classList.remove('fw-bold');
+      el.classList.add('fw-normal', 'link-secondary');
+    }
+  });
 };
 
 export const renderProcess = (value, elements) => {
