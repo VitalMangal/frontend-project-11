@@ -54,17 +54,25 @@ export default () => {
       };
 
       const watchedState = onChange(state, (path, value, previouseValue) => {
-        if (path === 'feeds') {
-          renderFeeds(value, previouseValue, i18nextInstance, elements);
-        }
-        if (path === 'posts') {
-          renderPosts(value, previouseValue, i18nextInstance, elements);
-        }
-        if (path === 'feedback') {
-          renderFeedback(elements, value, i18nextInstance);
-        }
-        if (path === 'processState') {
-          renderProcess(value, elements);
+        switch (path) {
+          case 'feeds':
+            renderFeeds(value, previouseValue, i18nextInstance, elements);
+            break;
+
+          case 'posts':
+            renderPosts(value, previouseValue, i18nextInstance, elements);
+            break;
+
+          case 'feedback':
+            renderFeedback(elements, value, i18nextInstance);
+            break;
+
+          case 'processState':
+            renderProcess(value, elements);
+            break;
+
+          default:
+            break;
         }
       });
 
@@ -93,12 +101,12 @@ export default () => {
             return axios.get(parsedUrl);
           })
           .then((response) => {
-            const newFeedAndPosts = parseResponse(response, elements.input.value);
+            const newFeedAndPosts = parseResponse(response);
             watchedState.feeds.push(newFeedAndPosts.feed);
             watchedState.posts = [...state.posts, ...newFeedAndPosts.posts];
           })
           .then(() => {
-            watchedState.feedback = 'Completed';
+            watchedState.feedback = 'completed';
             watchedState.processState = 'editing';
             elements.form.reset();
             elements.input.focus();
@@ -113,7 +121,7 @@ export default () => {
         const { target } = e;
         if (target.matches('button')) {
           const id = target.getAttribute('data-id');
-          const necessaryPost = _.find(watchedState.posts, { itemId: id });
+          const necessaryPost = watchedState.posts.find((post) => post.itemId === id);
           necessaryPost.itemRead = 'read';
 
           renderModal(necessaryPost, elements);
@@ -121,7 +129,7 @@ export default () => {
         }
         if (target.matches('a')) {
           const id = target.getAttribute('data-id');
-          const necessaryPost = _.find(watchedState.posts, { itemId: id });
+          const necessaryPost = watchedState.posts.find((post) => post.itemId === id);
           necessaryPost.itemRead = 'read';
 
           renderLinkView(id);
@@ -138,7 +146,7 @@ export default () => {
         const promise = Promise.all(promises);
         promise.then((responses) => responses.forEach((response) => {
           if (response.result === 'success') {
-            const newRequestResult = parseResponse(response.response, 'sameRss', response.feed.feedId);
+            const newRequestResult = parseResponse(response.response, response.feed.feedId);
             const existingPostsLinks = watchedState.posts
               .filter((post) => post.feedId === response.feed.feedId)
               .map((post) => post.itemLink);

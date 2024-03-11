@@ -34,7 +34,7 @@ export const renderFeedback = (elements, value, i18next) => {
       elements.feedback.classList.remove('text-success');
       break;
 
-    case 'Completed':
+    case 'completed':
       elements.feedback.classList.add('text-success');
       break;
 

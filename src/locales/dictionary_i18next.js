@@ -7,7 +7,7 @@ export default {
     validError: 'Ссылка должна быть валидным URL',
     notConteinRSS: 'Ресурс не содержит валидный RSS',
     'Network Error': 'Ошибка сети',
-    Completed: 'RSS успешно загружен',
+    completed: 'RSS успешно загружен',
     notEmpty: 'Не должно быть пустым',
     feeds: 'Фиды',
     posts: 'Посты',
