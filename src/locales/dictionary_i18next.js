@@ -9,6 +9,8 @@ export default {
     'Network Error': 'Ошибка сети',
     Completed: 'RSS успешно загружен',
     notEmpty: 'Не должно быть пустым',
+    feeds: 'Фиды',
+    posts: 'Посты',
   },
 
 };

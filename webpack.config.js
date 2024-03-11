@@ -4,13 +4,11 @@ import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const { dirname } = import.meta;
 
 const config = {
-// mode: process.env.NODE_ENV || 'development',
   entry: './src/index.js',
   output: {
-    path: path.resolve(dirname, 'dist'),
+    path: path.resolve(process.cwd(), 'dist'),
   },
   devServer: {
     open: true,
@@ -28,16 +26,6 @@ const config = {
   ],
   module: {
     rules: [
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env'],
-          },
-        },
-      },
       { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
       {
         test: /\.scss$/,

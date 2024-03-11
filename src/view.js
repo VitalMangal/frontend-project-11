@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-export const primaryRender = (container, name) => {
+const primaryRender = (container, name) => {
   const divCardEl = document.createElement('div');
   divCardEl.classList.add('card', 'border-0');
 
@@ -45,7 +45,10 @@ export const renderFeedback = (elements, value, i18next) => {
   }
 };
 
-export const renderFeeds = (value, previouseValue) => {
+export const renderFeeds = (value, previouseValue, i18next, elements) => {
+  if (!elements.feedsContainer.innerHTML) {
+    primaryRender(elements.feedsContainer, i18next.t('feeds'));
+  }
   const liEl = document.createElement('li');
   liEl.classList.add('list-group-item', 'border-0', 'border-end-0');
 
@@ -65,7 +68,10 @@ export const renderFeeds = (value, previouseValue) => {
   ulFeedsEl.append(liEl);
 };
 
-export const renderPosts = (value, previouseValue, i18next) => {
+export const renderPosts = (value, previouseValue, i18next, elements) => {
+  if (!elements.postsContainer.innerHTML) {
+    primaryRender(elements.postsContainer, i18next.t('posts'));
+  }
   const newPosts = _.difference(value, previouseValue);
   const sortNewPosts = newPosts.reverse();
   sortNewPosts.forEach((post) => {
