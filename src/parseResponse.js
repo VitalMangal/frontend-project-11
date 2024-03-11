@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 export default (response, rssRequest, id = _.uniqueId()) => {
   const result = {
-    feed: [],
+    feed: {},
     posts: [],
   };
   try {
@@ -12,9 +12,9 @@ export default (response, rssRequest, id = _.uniqueId()) => {
     const feedTitle = (doc.querySelector('channel > title')).textContent;
     const feedDescription = (doc.querySelector('channel > description')).textContent;
     const feedId = id;
-    result.feed.push({
+    result.feed = {
       feedTitle, feedDescription, feedId, rssRequest,
-    });
+    };
 
     const items = doc.querySelectorAll('channel > item');
     items.forEach((item) => {

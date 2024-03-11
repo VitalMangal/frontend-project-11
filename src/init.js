@@ -83,10 +83,10 @@ export default () => {
 
       elements.form.addEventListener('submit', (e) => {
         e.preventDefault();
-        watchedState.processState = 'send';
+        watchedState.processState = 'processingRequest';
 
-        const ressRequests = _.map(state.feeds, 'rssRequest');
-        validateURL(elements.input.value, ressRequests)
+        const rssRequests = _.map(state.feeds, 'rssRequest');
+        validateURL(elements.input.value, rssRequests)
           .then((validUrl) => {
             watchedState.feedback = '';
             const parsedUrl = allOriginsUrl(validUrl);
@@ -94,7 +94,7 @@ export default () => {
           })
           .then((response) => {
             const newFeedAndPosts = parseResponse(response, elements.input.value);
-            watchedState.feeds = [...state.feeds, ...newFeedAndPosts.feed];
+            watchedState.feeds.push(newFeedAndPosts.feed);
             watchedState.posts = [...state.posts, ...newFeedAndPosts.posts];
           })
           .then(() => {
@@ -103,62 +103,63 @@ export default () => {
             elements.form.reset();
             elements.input.focus();
           })
-          .then(() => {
-            const viewButtons = document.querySelectorAll('button[data-id]');
-            viewButtons.forEach((btn) => {
-              btn.addEventListener('click', (event) => {
-                const id = event.target.getAttribute('data-id');
-                const necessaryPost = _.find(watchedState.posts, { itemId: id });
-                necessaryPost.itemRead = 'read';
-
-                renderModal(necessaryPost, elements);
-                renderLinkView(id);
-              });
-            });
-          })
-          .then(() => {
-            const links = document.querySelectorAll('a[data-id]');
-            links.forEach((link) => {
-              link.addEventListener('click', (event) => {
-                const id = event.target.getAttribute('data-id');
-                const necessaryPost = _.find(watchedState.posts, { itemId: id });
-                necessaryPost.itemRead = 'read';
-
-                renderLinkView(id);
-              });
-            });
-          })
           .catch((error) => {
             watchedState.feedback = error.message;
             watchedState.processState = 'editing';
           });
       });
 
+      elements.postsContainer.addEventListener('click', (e) => {
+        const { target } = e;
+        if (target.matches('button')) {
+          const id = target.getAttribute('data-id');
+          const necessaryPost = _.find(watchedState.posts, { itemId: id });
+          necessaryPost.itemRead = 'read';
+
+          renderModal(necessaryPost, elements);
+          renderLinkView(id);
+        }
+        if (target.matches('a')) {
+          const id = target.getAttribute('data-id');
+          const necessaryPost = _.find(watchedState.posts, { itemId: id });
+          necessaryPost.itemRead = 'read';
+
+          renderLinkView(id);
+        }
+      });
+
       const watchNewPosts = () => {
-        watchedState.feeds.forEach((feed) => {
+        const promises = watchedState.feeds.map((feed) => {
           const parsedUrl = allOriginsUrl(feed.rssRequest);
-          axios.get(parsedUrl)
-            .then((response) => {
-              const newRequestResult = parseResponse(response, 'feed', feed.feedId);
-              const existingPostsLinks = watchedState.posts
-                .filter((post) => post.feedId === feed.feedId)
-                .map((post) => post.itemLink);
-              const reverseNewPosts = newRequestResult.posts.reverse();
-              reverseNewPosts.forEach((post) => {
-                if (!existingPostsLinks.includes(post.itemLink)) {
-                  watchedState.posts.push(post);
-                }
-              });
-            })
-            .catch((error) => {
-              console.log(error.message);
-            });
+          return axios.get(parsedUrl)
+            .then((response) => ({ result: 'success', response, feed }))
+            .catch((error) => ({ result: 'error', error }));
         });
+        const promise = Promise.all(promises);
+        promise.then((responses) => responses.forEach((response) => {
+          if (response.result === 'success') {
+            const newRequestResult = parseResponse(response.response, 'sameRss', response.feed.feedId);
+            const existingPostsLinks = watchedState.posts
+              .filter((post) => post.feedId === response.feed.feedId)
+              .map((post) => post.itemLink);
+            const reverseNewPosts = newRequestResult.posts.reverse();
+            reverseNewPosts.forEach((post) => {
+              if (!existingPostsLinks.includes(post.itemLink)) {
+                watchedState.posts.push(post);
+              }
+            });
+          }
+        }));
+        return Promise.resolve();
       };
 
+      const timeoutMs = 5000;
+
       setTimeout(function check() {
-        watchNewPosts();
-        setTimeout(check, 5000);
-      }, 5000);
+        watchNewPosts()
+          .then(() => {
+            setTimeout(check, timeoutMs);
+          });
+      }, timeoutMs);
     });
 };

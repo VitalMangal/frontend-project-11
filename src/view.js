@@ -73,8 +73,8 @@ export const renderPosts = (value, previouseValue, i18next, elements) => {
     primaryRender(elements.postsContainer, i18next.t('posts'));
   }
   const newPosts = _.difference(value, previouseValue);
-  const sortNewPosts = newPosts.reverse();
-  sortNewPosts.forEach((post) => {
+  const reverseNewPosts = newPosts.reverse();
+  reverseNewPosts.forEach((post) => {
     const liEl = document.createElement('li');
     liEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     const ulPostsEl = document.querySelector('.posts > .card > ul');
@@ -123,7 +123,7 @@ export const renderProcess = (value, elements) => {
     case 'editing':
       elements.submitButton.removeAttribute('disabled');
       break;
-    case 'send':
+    case 'processingRequest':
       elements.submitButton.setAttribute('disabled', 'disabled');
       break;
     default:
