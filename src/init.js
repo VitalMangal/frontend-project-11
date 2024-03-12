@@ -57,8 +57,6 @@ export default () => {
     return originsUrl;
   };
 
-  const timeoutMs = 5000;
-
   const watchNewPosts = (watchedState) => {
     const promises = watchedState.feeds.map((feed) => {
       const parsedUrl = allOriginsUrl(feed.rssRequest);
@@ -166,9 +164,10 @@ export default () => {
       });
     })
     .catch((error) => {
-      watchedState.feedback = error.message;
+      console.log(error);
     })
     .finally(() => {
+      const timeoutMs = 5000;
       setTimeout(function check() {
         watchNewPosts(watchedState)
           .then(() => {
