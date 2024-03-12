@@ -89,8 +89,6 @@ export default () => {
       });
   };
 
-  let watchedState;
-
   const i18nextInstance = i18next.createInstance();
 
   i18nextInstance.init({
@@ -100,7 +98,7 @@ export default () => {
     },
   })
     .then(() => {
-      watchedState = onChange(state, (path, value, previouseValue) => {
+      const watchedState = onChange(state, (path, value, previouseValue) => {
         switch (path) {
           case 'feeds':
             renderFeeds(value, previouseValue, i18nextInstance, elements);
