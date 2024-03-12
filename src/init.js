@@ -22,6 +22,70 @@ export default () => {
     feedback: '',
   };
 
+  yup.setLocale({
+    string: {
+      url: 'validError',
+    },
+    mixed: {
+      notOneOf: 'duplicationError',
+      required: 'notEmpty',
+    },
+  });
+
+  const elements = {
+    form: document.querySelector('.rss-form'),
+    input: document.querySelector('#url-input'),
+    feedback: document.querySelector('.feedback'),
+    submitButton: document.querySelector('[type="submit"]'),
+    feedsContainer: document.querySelector('.feeds'),
+    postsContainer: document.querySelector('.posts'),
+    modalHeader: document.querySelector('.modal-header > h5'),
+    modalBody: document.querySelector('.modal-body'),
+    modalLink: document.querySelector('.modal-footer > a'),
+  };
+
+  const validateURL = (url, feeds) => {
+    const schema = yup.string().url().trim().required()
+      .notOneOf(feeds);
+    return schema.validate(url);
+  };
+
+  const allOriginsUrl = (url) => {
+    const originsUrl = new URL('https://allorigins.hexlet.app/get');
+    originsUrl.searchParams.set('disableCache', 'true');
+    originsUrl.searchParams.set('url', url);
+    return originsUrl;
+  };
+
+  const timeoutMs = 5000;
+
+  const watchNewPosts = (watchedState) => {
+    const promises = watchedState.feeds.map((feed) => {
+      const parsedUrl = allOriginsUrl(feed.rssRequest);
+      return axios.get(parsedUrl)
+        .then((response) => ({ result: 'success', response, feed }))
+        .catch((error) => ({ result: 'error', error }));
+    });
+    const promise = Promise.all(promises);
+    promise.then((responses) => responses.forEach((response) => {
+      if (response.result === 'success') {
+        const newRequestResult = parseResponse(response.response, response.feed.feedId);
+        const existingPostsLinks = watchedState.posts
+          .filter((post) => post.feedId === response.feed.feedId)
+          .map((post) => post.itemLink);
+        const reverseNewPosts = newRequestResult.posts.reverse();
+        reverseNewPosts.forEach((post) => {
+          if (!existingPostsLinks.includes(post.itemLink)) {
+            watchedState.posts.push(post);
+          }
+        });
+      }
+    }));
+    return Promise.resolve();
+  };
+
+  let watchedState;
+
   const i18nextInstance = i18next.createInstance();
 
   i18nextInstance.init({
@@ -31,29 +95,7 @@ export default () => {
     },
   })
     .then(() => {
-      yup.setLocale({
-        string: {
-          url: 'validError',
-        },
-        mixed: {
-          notOneOf: 'duplicationError',
-          required: 'notEmpty',
-        },
-      });
-
-      const elements = {
-        form: document.querySelector('.rss-form'),
-        input: document.querySelector('#url-input'),
-        feedback: document.querySelector('.feedback'),
-        submitButton: document.querySelector('[type="submit"]'),
-        feedsContainer: document.querySelector('.feeds'),
-        postsContainer: document.querySelector('.posts'),
-        modalHeader: document.querySelector('.modal-header > h5'),
-        modalBody: document.querySelector('.modal-body'),
-        modalLink: document.querySelector('.modal-footer > a'),
-      };
-
-      const watchedState = onChange(state, (path, value, previouseValue) => {
+      watchedState = onChange(state, (path, value, previouseValue) => {
         switch (path) {
           case 'feeds':
             renderFeeds(value, previouseValue, i18nextInstance, elements);
@@ -75,19 +117,6 @@ export default () => {
             break;
         }
       });
-
-      const validateURL = (url, feeds) => {
-        const schema = yup.string().url().trim().required()
-          .notOneOf(feeds);
-        return schema.validate(url);
-      };
-
-      const allOriginsUrl = (url) => {
-        const originsUrl = new URL('https://allorigins.hexlet.app/get');
-        originsUrl.searchParams.set('disableCache', 'true');
-        originsUrl.searchParams.set('url', url);
-        return originsUrl;
-      };
 
       elements.form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -135,36 +164,13 @@ export default () => {
           renderLinkView(id);
         }
       });
-
-      const watchNewPosts = () => {
-        const promises = watchedState.feeds.map((feed) => {
-          const parsedUrl = allOriginsUrl(feed.rssRequest);
-          return axios.get(parsedUrl)
-            .then((response) => ({ result: 'success', response, feed }))
-            .catch((error) => ({ result: 'error', error }));
-        });
-        const promise = Promise.all(promises);
-        promise.then((responses) => responses.forEach((response) => {
-          if (response.result === 'success') {
-            const newRequestResult = parseResponse(response.response, response.feed.feedId);
-            const existingPostsLinks = watchedState.posts
-              .filter((post) => post.feedId === response.feed.feedId)
-              .map((post) => post.itemLink);
-            const reverseNewPosts = newRequestResult.posts.reverse();
-            reverseNewPosts.forEach((post) => {
-              if (!existingPostsLinks.includes(post.itemLink)) {
-                watchedState.posts.push(post);
-              }
-            });
-          }
-        }));
-        return Promise.resolve();
-      };
-
-      const timeoutMs = 5000;
-
+    })
+    .catch((error) => {
+      watchedState.feedback = error.message;
+    })
+    .finally(() => {
       setTimeout(function check() {
-        watchNewPosts()
+        watchNewPosts(watchedState)
           .then(() => {
             setTimeout(check, timeoutMs);
           });
