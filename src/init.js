@@ -67,13 +67,13 @@ export default () => {
         .catch((error) => ({ result: 'error', error }));
     });
     const promise = Promise.all(promises);
-    promise.then((responses) => responses.forEach((response) => {
-      if (response.result === 'success') {
-        const newRequestResult = parseResponse(response.response, response.feed.feedId);
+    promise.then((responses) => responses.forEach((resp) => {
+      if (resp.result === 'success') {
+        const newReqResult = parseResponse(resp.response, resp.feed.rssRequest, resp.feed.feedId);
         const existingPostsLinks = watchedState.posts
-          .filter((post) => post.feedId === response.feed.feedId)
+          .filter((post) => post.feedId === resp.feed.feedId)
           .map((post) => post.itemLink);
-        const reverseNewPosts = newRequestResult.posts.reverse();
+        const reverseNewPosts = newReqResult.posts.reverse();
         reverseNewPosts.forEach((post) => {
           if (!existingPostsLinks.includes(post.itemLink)) {
             watchedState.posts.push(post);
@@ -102,7 +102,6 @@ export default () => {
         switch (path) {
           case 'feeds':
             renderFeeds(value, previouseValue, i18nextInstance, elements);
-            console.log(state.feeds, 'feeds');
             break;
 
           case 'posts':
@@ -136,7 +135,7 @@ export default () => {
             return axios.get(parsedUrl);
           })
           .then((response) => {
-            const newFeedAndPosts = parseResponse(response);
+            const newFeedAndPosts = parseResponse(response, elements.input.value);
             watchedState.feeds.push(newFeedAndPosts.feed);
             watchedState.posts = [...state.posts, ...newFeedAndPosts.posts];
           })

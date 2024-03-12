@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-export default (response, id = _.uniqueId()) => {
+export default (response, rssUrl, id = _.uniqueId()) => {
   const result = {
     feed: {},
     posts: [],
@@ -12,8 +12,7 @@ export default (response, id = _.uniqueId()) => {
     const feedTitle = (doc.querySelector('channel > title')).textContent;
     const feedDescription = (doc.querySelector('channel > description')).textContent;
     const feedId = id;
-    console.log(response);
-    const rssRequest = response.data?.status?.url ?? feedTitle;
+    const rssRequest = rssUrl; // response.data?.status?.url ?? feedTitle;
     result.feed = {
       feedTitle, feedDescription, feedId, rssRequest,
     };
