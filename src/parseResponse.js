@@ -12,7 +12,8 @@ export default (response, id = _.uniqueId()) => {
     const feedTitle = (doc.querySelector('channel > title')).textContent;
     const feedDescription = (doc.querySelector('channel > description')).textContent;
     const feedId = id;
-    const rssRequest = response.data.status.url;
+    console.log(response);
+    const rssRequest = response.data?.status?.url ?? feedTitle;
     result.feed = {
       feedTitle, feedDescription, feedId, rssRequest,
     };

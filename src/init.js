@@ -102,6 +102,7 @@ export default () => {
         switch (path) {
           case 'feeds':
             renderFeeds(value, previouseValue, i18nextInstance, elements);
+            console.log(state.feeds, 'feeds');
             break;
 
           case 'posts':
