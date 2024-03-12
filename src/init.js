@@ -57,6 +57,8 @@ export default () => {
     return originsUrl;
   };
 
+  const timeoutMs = 5000;
+
   const watchNewPosts = (watchedState) => {
     const promises = watchedState.feeds.map((feed) => {
       const parsedUrl = allOriginsUrl(feed.rssRequest);
@@ -78,8 +80,13 @@ export default () => {
           }
         });
       }
-    }));
-    return Promise.resolve();
+    }))
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        setTimeout(() => watchNewPosts(watchedState), timeoutMs);
+      });
   };
 
   let watchedState;
@@ -115,6 +122,8 @@ export default () => {
             break;
         }
       });
+
+      watchNewPosts(watchedState);
 
       elements.form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -162,17 +171,5 @@ export default () => {
           renderLinkView(id);
         }
       });
-    })
-    .catch((error) => {
-      console.log(error);
-    })
-    .finally(() => {
-      const timeoutMs = 5000;
-      setTimeout(function check() {
-        watchNewPosts(watchedState)
-          .then(() => {
-            setTimeout(check, timeoutMs);
-          });
-      }, timeoutMs);
     });
 };
